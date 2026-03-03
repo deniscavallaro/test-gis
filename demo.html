@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+	 integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+	 crossorigin=""></script>
+	 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+</head>
+	
+<body>
+	<div id="map" style="height:500px;"></div>
+	<script>
+		// da sistemare
+		var belluno = L.marker([46.141604, 12.21478]).bindPopup('Questa è Belluno, BL.');
+			treviso = L.marker([45.665826, 12.245464]).bindPopup('Questa è Treviso, TV.'),
+			venezia = L.marker([45.437099, 12.334342]).bindPopup('Questa è Venezia, VE.'),
+			padova = L.marker([45.407489, 11.873302]).bindPopup('Questa è Padova, PD.'),
+			vicenza = L.marker([45.548799, 11.548004]).bindPopup('Questa è Vicenza, VI.'),
+			verona = L.marker([45.438333, 10.99268]).bindPopup('Questa è Verona, VR.'),
+			rovigo = L.marker([45.069702, 11.788845]).bindPopup('Questa è Rovigo, RO.');
+			
+		var province = L.layerGroup([belluno, treviso, venezia, padova, vicenza, verona, rovigo]);
+		
+		
+		
+		/*
+		var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 19,
+			attribution: '© OpenStreetMap'
+		});
+		
+		var osmHOT = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+			maxZoom: 19,
+			attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
+		});
+		*/
+		
+		var googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+			maxZoom: 19,
+			subdomains:['mt0','mt1','mt2','mt3']
+		});
+		
+		var googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
+			maxZoom: 19,
+			subdomains:['mt0','mt1','mt2','mt3']
+		});
+		
+		var googleSatellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+			maxZoom: 19,
+			subdomains:['mt0','mt1','mt2','mt3']
+		});
+
+		var googleTerrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',{
+			maxZoom: 19,
+			subdomains:['mt0','mt1','mt2','mt3']
+		});
+		
+		
+		var map = L.map('map', {
+			center: [45.5756, 11.920166],
+			zoom: 8.45,
+			layers: [googleHybrid, province]
+		});
+			
+		
+		var baseMaps = {
+			'Ibrido': googleHybrid,
+			'Satellite': googleSatellite,
+			'Rilievo': googleTerrain,
+			'Strade': googleStreets,
+		};
+		
+		var overlayMaps = {
+			"Province": province
+		};
+		
+		var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+		
+		new L.Control.Geocoder().addTo(map);
+		
+		map.on('click', (e) => {
+				L.popup().setLatLng(e.latlng).setContent("Coordinate: " + e.latlng.toString()).openOn(map);
+			}
+		);
+		
+	</script>
+</body>
+
+</html>
+
+<!-- mappa + tile layer + marker + popup + click event -->
