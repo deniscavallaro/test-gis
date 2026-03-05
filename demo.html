@@ -2,6 +2,7 @@
 <html>
 <head>
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+	
 	<!-- oggetto di ricerca -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 	<!-- mini-mappa -->
@@ -17,6 +18,9 @@
 	<!-- coordinate con hover del mouse -->
 	<script src="https://unpkg.com/leaflet-mouse-position@1.2.0/src/L.Control.MousePosition.js"></script>
 	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.js"></script>
+	
 	<style>
 		html, body, #map {
             width: 100%;
@@ -27,63 +31,93 @@
 </head>
 	
 <body>
-	<div id="map" style="height:500px;"></div>
+	<div id="map"></div>
 	<script>
+	
+		var map = L.map('map', { maxZoom:21 } ).setView([42.358544, 14.194336], 6);
 		
+		var Bbox_width= 18.99-5.93;
+		var startResolution = Bbox_width/1024;
+		var grid_resolution = new Array(22);
+		for (var i = 0; i < 22; ++i) {
+			grid_resolution[i] = startResolution / Math.pow(2, i);
+		}
+		
+		var crs_6706 = new L.Proj.CRS('EPSG:6706', '+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs', {
+			origin: [0, 0],
+			bounds: L.bounds([5.93, 34.76], [18.99, 47.1]),
+			resolutions: grid_resolution
+		});
+		
+
 		var vestizioni = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
 			layers: 'vestizioni',
 			format: 'image/png',
+			maxZoom: 19,
 			transparent: true,
-			version: '1.1.1',
 			crs: crs_6706,
+			minZoom: 17,
+			maxZoom: 21
 		});
 		
 		var province = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
 			layers: 'province',
 			format: 'image/png',
+			maxZoom: 19,
 			transparent: true,
-			version: '1.1.1',
-			crs: L.CRS.EPSG4326
+			crs: crs_6706,
+			minZoom: 0,
+			maxZoom: 10
 		});
 		
 		var acque = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
 			layers: 'acque',
 			format: 'image/png',
+			maxZoom: 19,
 			transparent: true,
-			version: '1.1.1',
-			crs: L.CRS.EPSG4326
+			crs: crs_6706,
+			minZoom: 12,
+			maxZoom: 18
 		});
 		
 		var strade = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
 			layers: 'strade',
 			format: 'image/png',
+			maxZoom: 19,
 			transparent: true,
-			version: '1.1.1',
-			crs: L.CRS.EPSG4326
+			crs: crs_6706,
+			minZoom: 12,
+			maxZoom: 18
 		});
 		
 		var fabbricati = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
 			layers: 'fabbricati',
 			format: 'image/png',
+			maxZoom: 19,
 			transparent: true,
-			version: '1.1.1',
-			crs: L.CRS.EPSG4326
+			crs: crs_6706,
+			minZoom: 16,
+			maxZoom: 21
 		});
 		
 		var particelle = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
 			layers: 'CP.CadastralParcel',
 			format: 'image/png',
+			maxZoom: 19,
 			transparent: true,
-			version: '1.1.1',
-			crs: L.CRS.EPSG4326
+			crs: crs_6706,
+			minZoom: 16,
+			maxZoom: 21
 		});
 		
 		var mappe = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
 			layers: 'CP.CadastralZoning',
 			format: 'image/png',
+			maxZoom: 19,
 			transparent: true,
-			version: '1.1.1',
-			crs: L.CRS.EPSG4326
+			crs: crs_6706,
+			minZoom: 15,
+			maxZoom: 17
 		});
 		
 		/* ---- layers regione veneto ---- 
@@ -107,28 +141,17 @@
 			transparent: true,
 			version: '1.3.0'
 		});
-		*/
-		
-		// layers agenzia delle entrate
-		// oggetti: coordinate visualizzabili hover, mappina in basso a destra
-		
+		*/		
 		
 		var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 			attribution: '© OpenStreetMap'
-		});
+		}).addTo(map);
 		
 		var osmHOT = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 			attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
-		});
-		
-		var map = L.map('map', {
-			center: [45.5756, 11.920166],
-			zoom: 13,
-			layers: [osm]
-		});
-			
+		});			
 		
 		var baseMaps = {
 			"OpenStreetMap": osm,
