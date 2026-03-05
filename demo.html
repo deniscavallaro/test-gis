@@ -1,33 +1,118 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+	<!-- oggetto di ricerca -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-	 integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
-	 crossorigin=""></script>
-	 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+	<!-- mini-mappa -->
+	<link rel="stylesheet" href="Leaflet-MiniMap-master/Leaflet-MiniMap-master/src/Control.MiniMap.css" />
+	<!-- coordinate con hover del mouse -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-mouse-position@1.2.0/src/L.Control.MousePosition.css" />
+	
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+	<!-- oggetto di ricerca -->
+	<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+	<!-- mini-mappa -->
+	<script src="Leaflet-MiniMap-master/Leaflet-MiniMap-master/src/Control.MiniMap.js"></script>
+	<!-- coordinate con hover del mouse -->
+	<script src="https://unpkg.com/leaflet-mouse-position@1.2.0/src/L.Control.MousePosition.js"></script>
+	
+	<style>
+		html, body, #map {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+	</style>
 </head>
 	
 <body>
 	<div id="map" style="height:500px;"></div>
 	<script>
-		// da sistemare
-		var belluno = L.marker([46.141604, 12.21478]).bindPopup('Questa è Belluno, BL.');
-			treviso = L.marker([45.665826, 12.245464]).bindPopup('Questa è Treviso, TV.'),
-			venezia = L.marker([45.437099, 12.334342]).bindPopup('Questa è Venezia, VE.'),
-			padova = L.marker([45.407489, 11.873302]).bindPopup('Questa è Padova, PD.'),
-			vicenza = L.marker([45.548799, 11.548004]).bindPopup('Questa è Vicenza, VI.'),
-			verona = L.marker([45.438333, 10.99268]).bindPopup('Questa è Verona, VR.'),
-			rovigo = L.marker([45.069702, 11.788845]).bindPopup('Questa è Rovigo, RO.');
-			
-		var province = L.layerGroup([belluno, treviso, venezia, padova, vicenza, verona, rovigo]);
+		
+		var vestizioni = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
+			layers: 'vestizioni',
+			format: 'image/png',
+			transparent: true,
+			version: '1.1.1',
+			crs: crs_6706,
+		});
+		
+		var province = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
+			layers: 'province',
+			format: 'image/png',
+			transparent: true,
+			version: '1.1.1',
+			crs: L.CRS.EPSG4326
+		});
+		
+		var acque = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
+			layers: 'acque',
+			format: 'image/png',
+			transparent: true,
+			version: '1.1.1',
+			crs: L.CRS.EPSG4326
+		});
+		
+		var strade = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
+			layers: 'strade',
+			format: 'image/png',
+			transparent: true,
+			version: '1.1.1',
+			crs: L.CRS.EPSG4326
+		});
+		
+		var fabbricati = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
+			layers: 'fabbricati',
+			format: 'image/png',
+			transparent: true,
+			version: '1.1.1',
+			crs: L.CRS.EPSG4326
+		});
+		
+		var particelle = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
+			layers: 'CP.CadastralParcel',
+			format: 'image/png',
+			transparent: true,
+			version: '1.1.1',
+			crs: L.CRS.EPSG4326
+		});
+		
+		var mappe = L.tileLayer.wms('https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php', {
+			layers: 'CP.CadastralZoning',
+			format: 'image/png',
+			transparent: true,
+			version: '1.1.1',
+			crs: L.CRS.EPSG4326
+		});
+		
+		/* ---- layers regione veneto ---- 
+		var comuniDelVeneto = L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/wms', {
+			layers: 'rv:c0104011_comuni',
+			format: 'image/png',
+			transparent: true,
+			version: '1.3.0'
+		});
+		
+		var zonaExtraUrbanaDelVeneto = L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/wms', {
+			layers: 'rv:zona_extraurbana_11_2024',
+			format: 'image/png',
+			transparent: true,
+			version: '1.3.0'
+		});
+		
+		var zonaUrbanaDelVeneto = L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/wms', {
+			layers: 'rv:zona_urbana_11_2024',
+			format: 'image/png',
+			transparent: true,
+			version: '1.3.0'
+		});
+		*/
+		
+		// layers agenzia delle entrate
+		// oggetti: coordinate visualizzabili hover, mappina in basso a destra
 		
 		
-		
-		/*
 		var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 			attribution: '© OpenStreetMap'
@@ -37,45 +122,32 @@
 			maxZoom: 19,
 			attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
 		});
-		*/
-		
-		var googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
-			maxZoom: 19,
-			subdomains:['mt0','mt1','mt2','mt3']
-		});
-		
-		var googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
-			maxZoom: 19,
-			subdomains:['mt0','mt1','mt2','mt3']
-		});
-		
-		var googleSatellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
-			maxZoom: 19,
-			subdomains:['mt0','mt1','mt2','mt3']
-		});
-
-		var googleTerrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',{
-			maxZoom: 19,
-			subdomains:['mt0','mt1','mt2','mt3']
-		});
-		
 		
 		var map = L.map('map', {
 			center: [45.5756, 11.920166],
-			zoom: 8.45,
-			layers: [googleHybrid, province]
+			zoom: 13,
+			layers: [osm]
 		});
 			
 		
 		var baseMaps = {
-			'Ibrido': googleHybrid,
-			'Satellite': googleSatellite,
-			'Rilievo': googleTerrain,
-			'Strade': googleStreets,
+			"OpenStreetMap": osm,
+			"OpenStreetMap.HOT": osmHOT
 		};
 		
 		var overlayMaps = {
-			"Province": province
+		/* --- layers regione veneto
+			"Comuni (del Veneto)": comuniDelVeneto,
+			"Zona extra urbana (del Veneto)": zonaExtraUrbanaDelVeneto,
+			"Zona urbana (del Veneto)": zonaUrbanaDelVeneto,
+		*/
+			"Vestizioni": vestizioni,
+			"Strade": strade,
+			"Acque": acque,
+			"Fabbricati": fabbricati,
+			"Particelle": particelle,
+			"Mappe": mappe,
+			"Province": province,
 		};
 		
 		var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
@@ -87,9 +159,20 @@
 			}
 		);
 		
+		// mini-mappa
+		basemapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+		var baseMap = new L.TileLayer(basemapUrl, {minZoom: 0, maxZoom: 13});
+		var miniMap = new L.Control.MiniMap(baseMap).addTo(map);
+		
+		// coordinate per hover mouse
+		L.control.mousePosition({
+			position: "bottomleft",
+			separator: " | ",
+			numDigits: 6,
+			prefix: "Coordinate:"
+		}).addTo(map);
+
 	</script>
 </body>
 
 </html>
-
-<!-- mappa + tile layer + marker + popup + click event -->
