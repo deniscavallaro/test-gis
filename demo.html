@@ -36,118 +36,170 @@
 	<div id="map"></div>
 	<script>	
 		
-		var map = L.map('map', { maxZoom:21 } ).setView([42.358544, 14.194336], 6);	
+		// Classe da rendere esterna
 		
-		// basemaps
-		var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			maxZoom: 19,
-			attribution: '© OpenStreetMap'
-		}).addTo(map);
+		// f. -> ottimizzare inizializzazione layers (e basemaps) attraverso l'utilizzo di un ulteriore metodo, che rendera' il codice meno rindondante
+		// + metodo per aggiuntere nuovi layer, da testare sia internamente che esternamente (relativo alla classe)
 		
-		var stradeGoogle = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
-			subdomains:['mt0','mt1','mt2','mt3']
-		});
+		class WebMap {
+			
+			constructor(containerId, options) {
+			
+				this.containerId = containerId;
+				this.options = options;
+				
+				this.map = L.map(containerId, options);
+				
+				// lista basemaps disponibili
+				this.basemaps = {};
+				
+				// lista overlays disponibili
+				this.overlays = {};
+				
+				// basemap attualmente attiva
+				this.currentBasemap = null;
+				
+				this.initBasemaps();
+				this.initOverlays();				
+			}
+			
+			initBasemaps() {
+				
+				this.basemaps['osm'] = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 19,
+					attribution: '© OpenStreetMap'
+				});
+				
+				this.basemaps['satellite'] = L.tileLayer('https://api.maptiler.com/maps/satellite-v4/{z}/{x}/{y}.jpg?key=tq4NkZ5dHYumXCN3aAZX', {
+					attribution: "\u003ca href=\"https://www.maptiler.com/copyright/\" target=\"_blank\"\u003e\u0026copy; MapTiler\u003c/a\u003e \u003ca href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\"\u003e\u0026copy; OpenStreetMap contributors\u003c/a\u003e"
+				});
+				
+				this.basemaps['googleStrade'] = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+					subdomains:['mt0','mt1','mt2','mt3']
+				});
+			}
+			
+			initOverlays() {
+			
+				this.overlays['ortofoto_2024_Veneto'] =  L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/ows', {
+					layers: 'rv:ortofoto_agea_full_2024',
+					format: 'image/png',
+					transparent: true
+				});	
+				
+				this.overlays['ortofoto_202324_EmiliaRomagna'] = L.tileLayer.wms('https://servizigis.regione.emilia-romagna.it/wms/rer2023_24_rgb', {
+					layers: 'RER2023_24_RGB',
+					format: 'image/png',
+					transparent: true
+				});	
+				
+				this.overlays['ortofotoCGR_200203_Lazio'] =  L.tileLayer.wms('https://geoportale.regione.lazio.it/geoserver/ows', {
+					layers: 'geonode:2002_2003_CGR_25833_COG',
+					format: 'image/png',
+					transparent: true
+				});
+				
+				this.overlays['ortofoto_2022_Toscana'] =  L.tileLayer.wms('https://www502.regione.toscana.it/ows_ofc/com.rt.wms.RTmap/wms?map=owsofc&', {
+					layers: 'rt_ofc.5k22.32bit',
+					format: 'image/png',
+					transparent: true
+				});
+				
+				this.overlays['ctr_Veneto'] =  L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/ows', {
+					layers: 'rv:ctrr',
+					format: 'image/png',
+					transparent: true
+				});	
+				
+				this.overlays['ctr_EmiliaRomagna'] =  L.tileLayer.wms('https://servizigis.regione.emilia-romagna.it/wms/dbtr_ctr5', {
+					layers: 'DBTR_Ctr5',
+					format: 'image/png',
+					transparent: true
+				});	
+				
+				this.overlays['ctr_Lazio'] =  L.tileLayer.wms('https://geoportale.regione.lazio.it/geoserver/ows', {
+					layers: 'geonode:ctr_5k_2020',
+					format: 'image/png',
+					transparent: true
+				});	
+				
+				this.overlays['ctr_Toscana'] =  L.tileLayer.wms('https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&', {
+					layers: 'rt_ctr.10k',
+					format: 'image/png',
+					transparent: true
+				});	
+					
+				this.overlays['usoDelSuolo_EmiliaRomagna'] =  L.tileLayer.wms('https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo', {
+					layers: '2020_uso_suolo_ed2023',
+					format: 'image/png',
+					transparent: true
+				});		
+			}
+			
+			setBasemap(name) {
+				
+				const bm = this.basemaps[name];
+				
+				// se la mappa non esiste affatto nella lista delle basemaps
+				if (!bm) return;
+				
+				// se esiste (non era null), rimuove la basemap
+				if (this.currentBasemap) this.map.removeLayer(this.currentBasemap);
+				
+				// visualizza la basemap
+				bm.addTo(this.map);
+				
+				// la basemap selezionata attualmente diventa quella passata come parametro
+				this.currentBasemap = bm;
+			}
+			
+			toggleLayer(name, visible) {
+				
+				const ol = this.overlays[name];
+				
+				// se il layer non esiste
+				if (!ol) return;
+				
+				// se e' stato gia' aggiunto e non si vuole visualizzare
+				if (this.map.hasLayer(ol) && !visible) this.map.removeLayer(ol);
+				
+				// se non e' stato aggiunto e si vuole visualizzare
+				else if (!(this.map.hasLayer(ol)) && visible) this.map.addLayer(ol);
+				
+				else return;
+				
+			}
+			
+			showPractice(feature) {}
+			zoomToGeometry(geojson) {}
+			
+			bindMapClick() {}
+		}
 		
-		var ortofoto_2024_Veneto = L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/ows', {
-			layers: 'rv:ortofoto_agea_full_2024',
-			format: 'image/png',
-			transparent: true
-		});	
+		const map = new WebMap("map", {
+			center: [42.032974, 13.40332],
+			maxZoom: 21,
+			zoom: 6
+		});		
 		
-	/*	var ortofoto_2021_Veneto = L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/ows', {
-			layers: 'rv:ortofoto_2021',
-			format: 'image/png',
-			transparent: true
-		});	
+
 		
-		var ortofoto_2018_Veneto = L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/ows', {
-			layers: 'rv:ortofoto_2021',
-			format: 'image/png',
-			transparent: true
-		});	*/
-		
-		var ortofoto_202324_EmiliaRomagna = L.tileLayer.wms('https://servizigis.regione.emilia-romagna.it/wms/rer2023_24_rgb', {
-			layers: 'RER2023_24_RGB',
-			format: 'image/png',
-			transparent: true
-		});	
-		
-		var ortofotoCGR_200203_Lazio = L.tileLayer.wms('https://geoportale.regione.lazio.it/geoserver/ows', {
-			layers: 'geonode:2002_2003_CGR_25833_COG',
-			format: 'image/png',
-			transparent: true
-		});
-		// -------- EPSG:7791
-		var ortofoto_2022_Toscana = L.tileLayer.wms('https://www502.regione.toscana.it/ows_ofc/com.rt.wms.RTmap/wms?map=owsofc&', {
-			layers: 'rt_ofc.5k22.32bit',
-			format: 'text/html',
-			transparent: true
-		});
-		
-		var ctr_Veneto = L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/ows', {
-			layers: 'rv:ctrr',
-			format: 'image/png',
-			transparent: true
-		});	
-		
-		var ctr_EmiliaRomagna = L.tileLayer.wms('https://servizigis.regione.emilia-romagna.it/wms/dbtr_ctr5', {
-			layers: 'DBTR_Ctr5',
-			format: 'image/png',
-			transparent: true
-		});	
-		
-		var ctr_Lazio = L.tileLayer.wms('https://geoportale.regione.lazio.it/geoserver/ows', {
-			layers: 'geonode:ctr_5k_2020',
-			format: 'image/png',
-			transparent: true
-		});	
-		// -------- EPSG:6707
-		var ctr_Toscana = L.tileLayer.wms('https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&', {
-			layers: 'rt_ctr.10k',
-			format: 'text/xml',
-			transparent: true
-		});	
-		
-		// layers
-		var usoDelSuolo_EmiliaRomagna = L.tileLayer.wms('https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo', {
-			layers: '2020_uso_suolo_ed2023',
-			format: 'image/png',
-			transparent: true
-		});	
+		map.setBasemap('satellite');
+		map.toggleLayer('ctr_Veneto', true);
+		map.toggleLayer('ortofoto_2022_Toscana', true);
 		
 		
-		var baseMaps = {
-			"OpenStreetMap": osm,
-			"Strade - Google": stradeGoogle,
-			"Ortofoto Veneto - 2024": ortofoto_2024_Veneto,
-		//	"Ortofoto Veneto - 2021": ortofoto_2021_Veneto,
-		//	"Ortofoto Veneto - 2018": ortofoto_2018_Veneto,
-			"Ortofoto Emilia-Romagna - 2023-24": ortofoto_202324_EmiliaRomagna,
-			"Ortofoto Lazio - 2002-03": ortofotoCGR_200203_Lazio,
-			"Ortofoto Toscana - 2022": ortofoto_2022_Toscana,
-			"CTR - Veneto": ctr_Veneto,
-			"CTR - Emilia-Romagna": ctr_EmiliaRomagna,
-			"CTR - Lazio": ctr_Lazio,
-			"CTR - Toscana": ctr_Toscana
-		};
+		new L.Control.Geocoder().addTo(map.map);
 		
-		var overlayMaps = {
-			"Uso del suolo Emilia-Romagna": usoDelSuolo_EmiliaRomagna
-		};
-		
-		var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
-		
-		new L.Control.Geocoder().addTo(map);
-		
-		map.on('click', (e) => {
-				L.popup().setLatLng(e.latlng).setContent("Coordinate: " + e.latlng.toString()).openOn(map);
+		map.map.on('click', (e) => {
+				L.popup().setLatLng(e.latlng).setContent("Coordinate: " + e.latlng.toString()).openOn(map.map);
 			}
 		);
 		
 		// mini-mappa
 		basemapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 		var baseMap = new L.TileLayer(basemapUrl, {minZoom: 0, maxZoom: 13});
-		var miniMap = new L.Control.MiniMap(baseMap).addTo(map);
+		var miniMap = new L.Control.MiniMap(baseMap).addTo(map.map);
 		
 		// coordinate per hover mouse
 		L.control.mousePosition({
@@ -155,8 +207,8 @@
 			separator: " | ",
 			numDigits: 6,
 			prefix: "Coordinate:"
-		}).addTo(map);
-
+		}).addTo(map.map);
+		
 	</script>
 </body>
 
