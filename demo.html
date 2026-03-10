@@ -2,6 +2,7 @@
 <html>
 <head>
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+	<script src="WebMap.js"></script>
 	
 	<!-- oggetto di ricerca -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -34,167 +35,33 @@
 	
 <body>
 	<div id="map"></div>
-	<script>	
+	<script>
+		// ---> Toscana !!
 		
-		// Classe da rendere esterna
+		// al click, visualizza metadati (da reperire, controllare se i layer forniscono effettivamente)
+		// al doppio click, visualizza coordinate
 		
-		// f. -> ottimizzare inizializzazione layers (e basemaps) attraverso l'utilizzo di un ulteriore metodo, che rendera' il codice meno rindondante
-		// + metodo per aggiuntere nuovi layer, da testare sia internamente che esternamente (relativo alla classe)
-		
-		class WebMap {
-			
-			constructor(containerId, options) {
-			
-				this.containerId = containerId;
-				this.options = options;
-				
-				this.map = L.map(containerId, options);
-				
-				// lista basemaps disponibili
-				this.basemaps = {};
-				
-				// lista overlays disponibili
-				this.overlays = {};
-				
-				// basemap attualmente attiva
-				this.currentBasemap = null;
-				
-				this.initBasemaps();
-				this.initOverlays();				
-			}
-			
-			initBasemaps() {
-				
-				this.basemaps['osm'] = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-					maxZoom: 19,
-					attribution: '© OpenStreetMap'
-				});
-				
-				this.basemaps['satellite'] = L.tileLayer('https://api.maptiler.com/maps/satellite-v4/{z}/{x}/{y}.jpg?key=tq4NkZ5dHYumXCN3aAZX', {
-					attribution: "\u003ca href=\"https://www.maptiler.com/copyright/\" target=\"_blank\"\u003e\u0026copy; MapTiler\u003c/a\u003e \u003ca href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\"\u003e\u0026copy; OpenStreetMap contributors\u003c/a\u003e"
-				});
-				
-				this.basemaps['googleStrade'] = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
-					subdomains:['mt0','mt1','mt2','mt3']
-				});
-			}
-			
-			initOverlays() {
-			
-				this.overlays['ortofoto_2024_Veneto'] =  L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/ows', {
-					layers: 'rv:ortofoto_agea_full_2024',
-					format: 'image/png',
-					transparent: true
-				});	
-				
-				this.overlays['ortofoto_202324_EmiliaRomagna'] = L.tileLayer.wms('https://servizigis.regione.emilia-romagna.it/wms/rer2023_24_rgb', {
-					layers: 'RER2023_24_RGB',
-					format: 'image/png',
-					transparent: true
-				});	
-				
-				this.overlays['ortofotoCGR_200203_Lazio'] =  L.tileLayer.wms('https://geoportale.regione.lazio.it/geoserver/ows', {
-					layers: 'geonode:2002_2003_CGR_25833_COG',
-					format: 'image/png',
-					transparent: true
-				});
-				
-				this.overlays['ortofoto_2022_Toscana'] =  L.tileLayer.wms('https://www502.regione.toscana.it/ows_ofc/com.rt.wms.RTmap/wms?map=owsofc&', {
-					layers: 'rt_ofc.5k22.32bit',
-					format: 'image/png',
-					transparent: true
-				});
-				
-				this.overlays['ctr_Veneto'] =  L.tileLayer.wms('https://idt2-geoserver.regione.veneto.it/geoserver/ows', {
-					layers: 'rv:ctrr',
-					format: 'image/png',
-					transparent: true
-				});	
-				
-				this.overlays['ctr_EmiliaRomagna'] =  L.tileLayer.wms('https://servizigis.regione.emilia-romagna.it/wms/dbtr_ctr5', {
-					layers: 'DBTR_Ctr5',
-					format: 'image/png',
-					transparent: true
-				});	
-				
-				this.overlays['ctr_Lazio'] =  L.tileLayer.wms('https://geoportale.regione.lazio.it/geoserver/ows', {
-					layers: 'geonode:ctr_5k_2020',
-					format: 'image/png',
-					transparent: true
-				});	
-				
-				this.overlays['ctr_Toscana'] =  L.tileLayer.wms('https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&', {
-					layers: 'rt_ctr.10k',
-					format: 'image/png',
-					transparent: true
-				});	
-					
-				this.overlays['usoDelSuolo_EmiliaRomagna'] =  L.tileLayer.wms('https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo', {
-					layers: '2020_uso_suolo_ed2023',
-					format: 'image/png',
-					transparent: true
-				});		
-			}
-			
-			setBasemap(name) {
-				
-				const bm = this.basemaps[name];
-				
-				// se la mappa non esiste affatto nella lista delle basemaps
-				if (!bm) return;
-				
-				// se esiste (non era null), rimuove la basemap
-				if (this.currentBasemap) this.map.removeLayer(this.currentBasemap);
-				
-				// visualizza la basemap
-				bm.addTo(this.map);
-				
-				// la basemap selezionata attualmente diventa quella passata come parametro
-				this.currentBasemap = bm;
-			}
-			
-			toggleLayer(name, visible) {
-				
-				const ol = this.overlays[name];
-				
-				// se il layer non esiste
-				if (!ol) return;
-				
-				// se e' stato gia' aggiunto e non si vuole visualizzare
-				if (this.map.hasLayer(ol) && !visible) this.map.removeLayer(ol);
-				
-				// se non e' stato aggiunto e si vuole visualizzare
-				else if (!(this.map.hasLayer(ol)) && visible) this.map.addLayer(ol);
-				
-				else return;
-				
-			}
-			
-			showPractice(feature) {}
-			zoomToGeometry(geojson) {}
-			
-			bindMapClick() {}
-		}
+		// riquadro in basso a destra che mostra gerarchia dei layer, con checkbox che hanno toggleLayer
+		// -> radiobutton per baseMap
 		
 		const map = new WebMap("map", {
 			center: [42.032974, 13.40332],
 			maxZoom: 21,
 			zoom: 6
 		});		
-		
-
-		
+				
 		map.setBasemap('satellite');
 		map.toggleLayer('ctr_Veneto', true);
 		map.toggleLayer('ortofoto_2022_Toscana', true);
 		
 		
+		map.addOverlay('edifici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
+		map.toggleLayer('ctr_Veneto', false);
+		map.toggleLayer('edifici_veneto', true);
+		
 		new L.Control.Geocoder().addTo(map.map);
 		
-		map.map.on('click', (e) => {
-				L.popup().setLatLng(e.latlng).setContent("Coordinate: " + e.latlng.toString()).openOn(map.map);
-			}
-		);
+		
 		
 		// mini-mappa
 		basemapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
