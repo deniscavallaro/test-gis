@@ -2,7 +2,6 @@
 <html>
 <head>
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-	<script src="WebMap.js"></script>
 	
 	<!-- oggetto di ricerca -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -18,6 +17,8 @@
 	<script src="Leaflet-MiniMap-master/Leaflet-MiniMap-master/src/Control.MiniMap.js"></script>
 	<!-- coordinate con hover del mouse -->
 	<script src="https://unpkg.com/leaflet-mouse-position@1.2.0/src/L.Control.MousePosition.js"></script>
+	<script src="BetterWMS.js"></script>
+	<script src="WebMap.js"></script>
 	
 	<!-- 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
@@ -41,7 +42,7 @@
 		// al click, visualizza metadati (da reperire, controllare se i layer forniscono effettivamente)
 		// al doppio click, visualizza coordinate
 		
-		// riquadro in basso a destra che mostra gerarchia dei layer, con checkbox che hanno toggleLayer
+		// riquadro a destra che mostra gerarchia dei layer, con checkbox che hanno toggleLayer
 		// -> radiobutton per baseMap
 		
 		const map = new WebMap("map", {
@@ -55,13 +56,13 @@
 		map.toggleLayer('ortofoto_2022_Toscana', true);
 		
 		
-		map.addOverlay('edifici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
+		map.addBetterWMSLayer('edifici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
+		map.addBetterWMSLayer('edifici_scolastici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_scolastici');
 		map.toggleLayer('ctr_Veneto', false);
 		map.toggleLayer('edifici_veneto', true);
 		
 		new L.Control.Geocoder().addTo(map.map);
-		
-		
+	
 		
 		// mini-mappa
 		basemapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
