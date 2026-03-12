@@ -118,6 +118,7 @@ class WebMap {
 		this.addBetterWMSLayer('ctr_Lazio', 'https://geoportale.regione.lazio.it/geoserver/ows', 'geonode:ctr_5k_2020');
 		this.addBetterWMSLayer('ctr_Toscana', 'https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&', 'rt_ctr.10k');
 		this.addBetterWMSLayer('usoDelSuolo_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo', '2020_uso_suolo_ed2023');
+		this.addBetterWMSLayer('edifici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
 	}
 	
 	/**

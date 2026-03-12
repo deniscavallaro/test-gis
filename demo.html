@@ -17,6 +17,8 @@
 	<script src="Leaflet-MiniMap-master/Leaflet-MiniMap-master/src/Control.MiniMap.js"></script>
 	<!-- coordinate con hover del mouse -->
 	<script src="https://unpkg.com/leaflet-mouse-position@1.2.0/src/L.Control.MousePosition.js"></script>
+	
+	<link rel="stylesheet" href="MapCSS.css" />
 	<script src="BetterWMS.js"></script>
 	<script src="WebMap.js"></script>
 	
@@ -24,40 +26,80 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.js"></script>
 	-->
-	
-	<style>
-		html, body, #map {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-	</style>
 </head>
-	
+
 <body>
-	<div id="map"></div>
+	<div id="map"></div>	
+	
 	<script>
 		// ---> Toscana !!
 		
-		// al click, visualizza metadati (da reperire, controllare se i layer forniscono effettivamente)
-		// al doppio click, visualizza coordinate
-		
-		// riquadro a destra che mostra gerarchia dei layer, con checkbox che hanno toggleLayer
-		// -> radiobutton per baseMap
+		// considerare la scelta di spostare il bottone a destra invece che a destra
+		// metodo per spostare posizione bottone Layer
 		
 		const map = new WebMap("map", {
 			center: [42.032974, 13.40332],
 			maxZoom: 21,
 			zoom: 6
 		});		
-				
+	</script>
+	
+	<div class="layer-button"></div>
+
+	<div class="layer-panel">
+		<div class="layer-group">
+			<strong>Mappe di base</strong>
+			<label><input type="radio" name="basemap" value="osm"> OSM </label><br>
+			<label><input type="radio" name="basemap" value="satellite" checked> Satellite </label>
+			<hr>
+		</div>
+
+		<div class="layer-group">
+			<strong>Veneto</strong>
+			<label><input type="checkbox" class="overlay" value="ortofoto_2024_Veneto"> Ortofoto 2024</label><br>
+			<label><input type="checkbox" class="overlay" value="ctr_Veneto"> CTR</label><br>
+			<label><input type="checkbox" class="overlay" value="edifici_veneto"> Edifici 2022</label>		
+		</div>
+
+		<div class="layer-group">
+			<strong>Emilia-Romagna</strong>
+			<label><input type="checkbox" class="overlay" value="ortofoto_202324_EmiliaRomagna"> Ortofoto 2023-24</label><br>
+			<label><input type="checkbox" class="overlay" value="ctr_EmiliaRomagna"> CTR</label><br>
+			<label><input type="checkbox" class="overlay" value="usoDelSuolo_EmiliaRomagna"> Uso del suolo 2023</label>
+		</div>
+		
+		<div class="layer-group">
+			<strong>Toscana</strong>
+			<label><input type="checkbox" class="overlay" value="ortofoto_2022_Toscana"> Ortofoto 2022</label><br>
+			<label><input type="checkbox" class="overlay" value="ctr_Toscana"> CTR</label>
+		</div>
+		
+		<div class="layer-group">
+			<strong>Lazio</strong>
+			<label><input type="checkbox" class="overlay" value="ortofotoCGR_200203_Lazio"> Ortofoto CGR 2002-03</label><br>
+			<label><input type="checkbox" class="overlay" value="ctr_Lazio"> CTR</label><br>
+		</div>
+		
+	</div>
+	
+	<script>
+	
+		const checkboxes = Array.from(document.getElementsByClassName("overlay"));
+		/*
+		checkboxes.forEach(cb => {
+
+			cb.addEventListener("change", () => { 
+				map.toggleLayer(map.map.overlays[value], !this.checked);
+			});
+		});
+		*/
+	
 		map.setBasemap('satellite');
 		map.toggleLayer('ctr_Veneto', true);
 		map.toggleLayer('ortofoto_2022_Toscana', true);
 		
 		
-		map.addBetterWMSLayer('edifici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
-		map.addBetterWMSLayer('edifici_scolastici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_scolastici');
+	//	map.addBetterWMSLayer('edifici_scolastici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_scolastici');
 		map.toggleLayer('ctr_Veneto', false);
 		map.toggleLayer('edifici_veneto', true);
 		
@@ -78,6 +120,7 @@
 		}).addTo(map.map);
 		
 	</script>
+	
 </body>
 
 </html>
