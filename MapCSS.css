@@ -11,12 +11,16 @@ html, body {
 /* bottone quadrato */
 .layer-button {
 	position:absolute;
-	bottom: 190px;
-	right:8px;
+	
+/*	bottom: 190px;
+	right:8px;  */
+	top: 10px;
+	left: 50px;
+	
 	width: 44px;
 	height: 44px;
 	background:white;
-	border:2px solid rgba(0, 0, 0, 0.6);
+	border:2px solid rgba(0, 0, 0, 0.3);
 	border-radius:4px;
 	cursor:pointer;
 	z-index:1000;
@@ -28,11 +32,14 @@ html, body {
 /* pannello */
 .layer-panel {
 	position:absolute;
-	bottom:190px;
-	right:8px;
+	
+/*	bottom:190px;
+	right:8px;  */
+	top: 10px;
+	left: 50px;
 
 	background:white;
-	border:2px solid rgba(0,0,0,0.6);
+	border:2px solid rgba(0,0,0,0.3);
 	border-radius:4px;
 	padding:10px;
 
@@ -42,6 +49,10 @@ html, body {
 	width:auto;
 	min-width:175px;
 	max-width:260px;
+	
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.5;
 }
 
 /* hover */

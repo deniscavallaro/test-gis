@@ -32,16 +32,18 @@
 	<div id="map"></div>	
 	
 	<script>
-		// ---> Toscana !!
+		// metodo per far apparire solo i layer della regione d'interesse
+		// nel panello della gerarchia, tramite parametro
 		
-		// considerare la scelta di spostare il bottone a destra invece che a destra
-		// metodo per spostare posizione bottone Layer
+		// controllare se c'è catasto toscana
 		
 		const map = new WebMap("map", {
 			center: [42.032974, 13.40332],
 			maxZoom: 21,
 			zoom: 6
-		});		
+		});
+		
+		map.setBasemap("osm");
 	</script>
 	
 	<div class="layer-button"></div>
@@ -49,8 +51,8 @@
 	<div class="layer-panel">
 		<div class="layer-group">
 			<strong>Mappe di base</strong>
-			<label><input type="radio" name="basemap" value="osm"> OSM </label><br>
-			<label><input type="radio" name="basemap" value="satellite" checked> Satellite </label>
+			<label><input type="radio" name="basemap" value="osm" class="basemap" checked> OSM </label>
+			<label><input type="radio" name="basemap" value="satellite" class="basemap"> Satellite </label>
 			<hr>
 		</div>
 
@@ -83,26 +85,48 @@
 	</div>
 	
 	<script>
-	
-		const checkboxes = Array.from(document.getElementsByClassName("overlay"));
-		/*
-		checkboxes.forEach(cb => {
+		
+		
+		
+		
+		const radios = Array.from(document.getElementsByClassName("basemap"));
 
-			cb.addEventListener("change", () => { 
-				map.toggleLayer(map.map.overlays[value], !this.checked);
-			});
-		});
-		*/
+		radios.forEach((rb) => {
 	
-		map.setBasemap('satellite');
-		map.toggleLayer('ctr_Veneto', true);
-		map.toggleLayer('ortofoto_2022_Toscana', true);
+			rb.addEventListener("change", function () {
+
+				if (this.checked) {
+					map.setBasemap(this.value);
+				}
+
+			});
+
+		});
+		
+		
+		const checkboxes = Array.from(document.getElementsByClassName("overlay"));
+		
+		checkboxes.forEach( (cb) => {
+		
+			cb.addEventListener("click", function() { 
+			
+				if (this.checked)
+				{	
+					map.toggleLayer(this.value, true);
+				}
+				else
+				{
+					map.toggleLayer(this.value, false)
+				}
+			});
+			
+		});
+		
+	
 		
 		
 	//	map.addBetterWMSLayer('edifici_scolastici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_scolastici');
-		map.toggleLayer('ctr_Veneto', false);
-		map.toggleLayer('edifici_veneto', true);
-		
+
 		new L.Control.Geocoder().addTo(map.map);
 	
 		

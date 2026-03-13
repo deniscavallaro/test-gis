@@ -88,8 +88,6 @@ class WebMap {
         layer.onFeatureClick = function(feature, latlng) {
             self.showPractice(feature, latlng);
         };
-
-        layer.addTo(this.map);
 		
 		// Memorizza il layer nella lista degli overlay
         this.overlays[name] = layer;
@@ -118,7 +116,7 @@ class WebMap {
 		this.addBetterWMSLayer('ctr_Lazio', 'https://geoportale.regione.lazio.it/geoserver/ows', 'geonode:ctr_5k_2020');
 		this.addBetterWMSLayer('ctr_Toscana', 'https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&', 'rt_ctr.10k');
 		this.addBetterWMSLayer('usoDelSuolo_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo', '2020_uso_suolo_ed2023');
-		this.addBetterWMSLayer('edifici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
+		this.addBetterWMSLayer('edifici_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
 	}
 	
 	/**
@@ -156,14 +154,11 @@ class WebMap {
 		// se il layer non esiste
 		if (!ol) return;
 		
-		// se e' stato gia' aggiunto e non si vuole visualizzare
-		if (this.map.hasLayer(ol) && !visible) this.map.removeLayer(ol);
+		// Se si vuole visualizzare il layer (true), allora si aggiunge
+		if (visible) this.map.addLayer(ol);
 		
-		// se non e' stato aggiunto e si vuole visualizzare
-		else if (!(this.map.hasLayer(ol)) && visible) this.map.addLayer(ol);
-		
-		else return;
-		
+		// in caso contrario (false), si rimuove
+		else this.map.removeLayer(ol);
 	}
 	
 	/**
