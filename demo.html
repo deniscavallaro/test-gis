@@ -37,6 +37,8 @@
 		
 		// controllare se c'è catasto toscana
 		
+		// problema visualizzazione layer edifici
+	
 		const map = new WebMap("map", {
 			center: [42.032974, 13.40332],
 			maxZoom: 21,
@@ -47,36 +49,45 @@
 	</script>
 	
 	<div class="layer-button"></div>
-
+	
+	<div class="region-panel">
+		<strong>Seleziona Regione</strong><br>
+		<label><input type="radio" name="region" value="tutte"> Tutte</label><br>
+		<label><input type="radio" name="region" value="veneto"> Veneto</label><br>
+		<label><input type="radio" name="region" value="emilia"> Emilia-Romagna</label><br>
+		<label><input type="radio" name="region" value="toscana"> Toscana</label><br>
+		<label><input type="radio" name="region" value="lazio"> Lazio</label>
+	</div>
+	
 	<div class="layer-panel">
 		<div class="layer-group">
 			<strong>Mappe di base</strong>
-			<label><input type="radio" name="basemap" value="osm" class="basemap" checked> OSM </label>
+			<label><input type="radio" name="basemap" value="osm" class="basemap" checked> OSM </label><br>
 			<label><input type="radio" name="basemap" value="satellite" class="basemap"> Satellite </label>
 			<hr>
 		</div>
 
-		<div class="layer-group">
+		<div class="layer-group veneto">
 			<strong>Veneto</strong>
 			<label><input type="checkbox" class="overlay" value="ortofoto_2024_Veneto"> Ortofoto 2024</label><br>
 			<label><input type="checkbox" class="overlay" value="ctr_Veneto"> CTR</label><br>
 			<label><input type="checkbox" class="overlay" value="edifici_veneto"> Edifici 2022</label>		
 		</div>
 
-		<div class="layer-group">
+		<div class="layer-group emilia">
 			<strong>Emilia-Romagna</strong>
 			<label><input type="checkbox" class="overlay" value="ortofoto_202324_EmiliaRomagna"> Ortofoto 2023-24</label><br>
 			<label><input type="checkbox" class="overlay" value="ctr_EmiliaRomagna"> CTR</label><br>
 			<label><input type="checkbox" class="overlay" value="usoDelSuolo_EmiliaRomagna"> Uso del suolo 2023</label>
 		</div>
 		
-		<div class="layer-group">
+		<div class="layer-group toscana">
 			<strong>Toscana</strong>
 			<label><input type="checkbox" class="overlay" value="ortofoto_2022_Toscana"> Ortofoto 2022</label><br>
 			<label><input type="checkbox" class="overlay" value="ctr_Toscana"> CTR</label>
 		</div>
 		
-		<div class="layer-group">
+		<div class="layer-group lazio">
 			<strong>Lazio</strong>
 			<label><input type="checkbox" class="overlay" value="ortofotoCGR_200203_Lazio"> Ortofoto CGR 2002-03</label><br>
 			<label><input type="checkbox" class="overlay" value="ctr_Lazio"> CTR</label><br>
@@ -86,7 +97,39 @@
 	
 	<script>
 		
-		
+		const regionRadios = document.querySelectorAll('input[name="region"]');
+		const regionPanel = document.querySelector(".region-panel");
+		const layerPanel = document.querySelector(".layer-panel");
+
+		const groups = document.querySelectorAll(".layer-group");
+	
+		regionRadios.forEach(radio => {
+
+			radio.addEventListener("change", function(){
+	
+				const region = this.value;
+
+				regionPanel.style.display = "none";
+				layerPanel.style.display = "block";
+	
+				groups.forEach(group => {
+
+					if(region === "tutte"){
+						group.style.display = "block";
+						return;
+					}
+
+					if(group.classList.contains(region)){
+						group.style.display = "block";
+					}else if(!group.querySelector(".basemap")){
+						group.style.display = "none";
+					}
+
+				});
+
+			});
+
+		});
 		
 		
 		const radios = Array.from(document.getElementsByClassName("basemap"));

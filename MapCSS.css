@@ -29,7 +29,30 @@ html, body {
 	background-repeat: no-repeat;
 }
 
-/* pannello */
+/* pannello regioni */
+.region-panel {
+	position:absolute;
+	top:10px;
+	left:50px;
+
+	background:white;
+	border:2px solid rgba(0,0,0,0.3);
+	border-radius:4px;
+	padding:10px;
+
+	display:none;
+	z-index:1000;
+
+	width:auto;
+	min-width:175px;
+	max-width:260px;
+
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size:0.75rem;
+	line-height:1.5;
+}
+
+/* pannello layer */
 .layer-panel {
 	position:absolute;
 	
@@ -56,8 +79,8 @@ html, body {
 }
 
 /* hover */
-.layer-button:hover + .layer-panel,
-.layer-panel:hover{
+.layer-button:hover + .region-panel,
+.region-panel:hover{
 	display:block;
 }
 
