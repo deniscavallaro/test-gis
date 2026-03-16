@@ -104,20 +104,22 @@ class WebMap {
 	 */
 	initOverlays() {
 		
-		this.addBetterWMSLayer('ortofoto_2024_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:ortofoto_agea_2024');
-		this.addBetterWMSLayer('ortofoto_2020_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/agea2020_rgb', 'Agea2020_RGB');
-		this.addBetterWMSLayer('ortofotoCGR_200203_Lazio', 'https://geoportale.regione.lazio.it/geoserver/ows', 'geonode:2002_2003_CGR_25833_COG');
-		this.addBetterWMSLayer('ortofoto_2022_Toscana', 'https://www502.regione.toscana.it/ows_ofc/com.rt.wms.RTmap/wms?map=owsofc&', 'rt_ofc.5k22.32bit');
-		this.addBetterWMSLayer('ctr_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:ctrr');
-		this.addBetterWMSLayer('ctr_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/dbtr_ctr5', 'DBTR_Ctr5');
-		this.addBetterWMSLayer('ctr_Lazio', 'https://geoportale.regione.lazio.it/geoserver/ows', 'geonode:ctr_5k_2020');
-		this.addBetterWMSLayer('ctr_Toscana', 'https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&', 'rt_ctr.10k');
 		this.addBetterWMSLayer('usoDelSuolo_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo', '2020_uso_suolo_ed2023');
 		this.addBetterWMSLayer('edifici_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
 
 		this.addBetterWMSLayer('fabbricati_Toscana', 'https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&', 'rt_cat.idcatfabbr.rt');
 		this.addBetterWMSLayer('fogliCatastali_Toscana', 'https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&', 'rt_cat.idcatbdfog.rt');
 		this.addBetterWMSLayer('particelleCatastali_Toscana', 'https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&', 'rt_cat.idcatpart.rt');
+		
+		this.addBetterWMSLayer('ctr_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:ctrr');
+		this.addBetterWMSLayer('ctr_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/dbtr_ctr5', 'DBTR_Ctr5');
+		this.addBetterWMSLayer('ctr_Lazio', 'https://geoportale.regione.lazio.it/geoserver/ows', 'geonode:ctr_5k_2020');
+		this.addBetterWMSLayer('ctr_Toscana', 'https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&', 'rt_ctr.10k');
+		this.addBetterWMSLayer('ortofoto_2020_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/agea2020_rgb', 'Agea2020_RGB');
+		this.addBetterWMSLayer('ortofoto_2024_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:ortofoto_agea_2024');
+		this.addBetterWMSLayer('ortofotoCGR_200203_Lazio', 'https://geoportale.regione.lazio.it/geoserver/ows', 'geonode:2002_2003_CGR_25833_COG');
+		this.addBetterWMSLayer('ortofoto_2022_Toscana', 'https://www502.regione.toscana.it/ows_ofc/com.rt.wms.RTmap/wms?map=owsofc&', 'rt_ofc.5k22.32bit');
+		
 	}
 	
 	/**
@@ -129,16 +131,16 @@ class WebMap {
 		
 		const bm = this.basemaps[name];
 		
-		// se la mappa non esiste affatto nella lista delle basemaps
+		// se la basemap richiesta non esiste nella lista
 		if (!bm) return;
 		
-		// se esiste (non era null), rimuove la basemap
+		// rimuove la basemap attualmente visualizzata
 		if (this.currentBasemap) this.map.removeLayer(this.currentBasemap);
 		
-		// visualizza la basemap
+		// aggiunge la nuova basemap alla mappa
 		bm.addTo(this.map);
 		
-		// la basemap selezionata attualmente diventa quella passata come parametro
+		// aggiorna il riferimento alla basemap attiva
 		this.currentBasemap = bm;
 	}
 	
@@ -227,7 +229,7 @@ class WebMap {
 		else latlng = obj;
 		
 		// le coordinate prese vengono usate per centrare
-		this.map.setView(latlng, 16);
+		this.map.setView(latlng);
 	}
 	
 	/**

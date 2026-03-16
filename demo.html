@@ -33,6 +33,8 @@
 	
 	<script>
 		
+		
+		
 		const map = new WebMap("map", {
 			center: [42.032974, 13.40332],
 			maxZoom: 18,
@@ -96,41 +98,58 @@
 	</div>
 	
 	<script>
-		
+		// recupera tutti i radio button delle regioni
 		const regionRadios = document.getElementsByName("region");
+		
+		// pannello di selezione regione
 		const regionPanel = document.getElementsByClassName("region-panel")[0];
+		
+		// pannello che contiene basemap e overlay
 		const layerPanel = document.getElementsByClassName("layer-panel")[0];
 		
+		// gruppi di layer (basemap + gruppi regionali)
 		const groups = document.getElementsByClassName("layer-group");
-	
-		for (let i = 0; i < regionRadios.length; i++) {
-
-			regionRadios[i].addEventListener("change", function () {
-
+		
+		/* Gestione scelta regione, serve a passare dal pannello regionial pannello layer */
+		for (let i = 0; i < regionRadios.length; i++) 
+		{
+			regionRadios[i].addEventListener("change", function () 
+			{
+				// regione selezionata
 				const region = this.value;
-
+				
+				// nasconde pannello regioni
 				regionPanel.style.display = "none";
+				
+				// nasconde pannello regioni
 				layerPanel.style.display = "block";
-		
-				for (let j = 0; j < groups.length; j++) {
-
+				
+				// scorre tutti i gruppi di layer
+				for (let j = 0; j < groups.length; j++) 
+				{
 					const group = groups[j];
-		
-					if (region === "tutte") {
+					
+					// se l’utente seleziona tutte, mostra tutti i gruppi
+					if (region === "tutte") 
+					{
 						group.style.display = "block";
 						continue;
 					}
-
-					if (group.classList.contains(region)) {
+					
+					// se il gruppo appartiene alla regione selezionata, viene mostrato
+					if (group.classList.contains(region)) 
+					{
 						group.style.display = "block";
-					} else {
-
+					} 
+					/* Se il gruppo non è della regione e non contiene basemap, 
+					   viene nascosto, evitando di nascondere il gruppo mappe di base */
+					else 
+					{
 						// verifica se contiene una basemap
 						const basemap = group.getElementsByClassName("basemap");
 		
-						if (basemap.length === 0) {
+						if (basemap.length === 0) 
 							group.style.display = "none";
-						}
 					}
 				}
 		
@@ -138,24 +157,27 @@
 
 		}
 		
-		
+		/* Gestione cambio basemap*/
+		// recupera tutte le radiobuttons delle basemap
 		const radios = Array.from(document.getElementsByClassName("basemap"));
 
 		radios.forEach((rb) => {
-	
+		
 			rb.addEventListener("change", function () {
-
-				if (this.checked) {
+			
+				// quando cambia il radio button
+				if (this.checked) 
+					// cambia la basemap nella mappa
 					map.setBasemap(this.value);
-				}
-
 			});
 
 		});
 		
-		
+		/* Gestione overlay */
+		// recupera tutte le checkbox degli overlay
 		const checkboxes = Array.from(document.getElementsByClassName("overlay"));
 		
+		// Ogni checkbox controlla un layer
 		checkboxes.forEach( (cb) => {
 		
 			cb.addEventListener("click", function() { 
@@ -172,7 +194,7 @@
 			
 		});
 		
-
+		/* Gestione apertura pannelli */
 		const layerButton = document.getElementsByClassName("layer-button")[0];
 
 		// apertura pannello regioni
