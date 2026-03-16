@@ -71,7 +71,7 @@
 			<strong>Veneto</strong>
 			<label><input type="checkbox" class="overlay" value="ortofoto_2024_Veneto"> Ortofoto 2024</label><br>
 			<label><input type="checkbox" class="overlay" value="ctr_Veneto"> CTR</label><br>
-			<label><input type="checkbox" class="overlay" value="edifici_veneto"> Edifici 2022</label>		
+			<label><input type="checkbox" class="overlay" value="edifici_Veneto"> Edifici 2022</label>		
 		</div>
 
 		<div class="layer-group emilia">
@@ -97,39 +97,45 @@
 	
 	<script>
 		
-		const regionRadios = document.querySelectorAll('input[name="region"]');
-		const regionPanel = document.querySelector(".region-panel");
-		const layerPanel = document.querySelector(".layer-panel");
-
-		const groups = document.querySelectorAll(".layer-group");
+		const regionRadios = document.getElementsByName("region");
+		const regionPanel = document.getElementsByClassName("region-panel")[0];
+		const layerPanel = document.getElementsByClassName("layer-panel")[0];
+		const groups = document.getElementsByClassName("layer-group");
 	
-		regionRadios.forEach(radio => {
+		for (let i = 0; i < regionRadios.length; i++) {
 
-			radio.addEventListener("change", function(){
-	
+			regionRadios[i].addEventListener("change", function () {
+
 				const region = this.value;
 
 				regionPanel.style.display = "none";
 				layerPanel.style.display = "block";
-	
-				groups.forEach(group => {
+		
+				for (let j = 0; j < groups.length; j++) {
 
-					if(region === "tutte"){
+					const group = groups[j];
+		
+					if (region === "tutte") {
 						group.style.display = "block";
-						return;
+						continue;
 					}
 
-					if(group.classList.contains(region)){
+					if (group.classList.contains(region)) {
 						group.style.display = "block";
-					}else if(!group.querySelector(".basemap")){
-						group.style.display = "none";
+					} else {
+
+						// verifica se contiene una basemap
+						const basemap = group.getElementsByClassName("basemap");
+		
+						if (basemap.length === 0) {
+							group.style.display = "none";
+						}
 					}
-
-				});
-
+				}
+		
 			});
 
-		});
+		}
 		
 		
 		const radios = Array.from(document.getElementsByClassName("basemap"));
