@@ -32,20 +32,17 @@
 	<div id="map"></div>	
 	
 	<script>
-		// metodo per far apparire solo i layer della regione d'interesse
-		// nel panello della gerarchia, tramite parametro
 		
-		// controllare se c'è catasto toscana
-		
-		// problema visualizzazione layer edifici
-	
 		const map = new WebMap("map", {
 			center: [42.032974, 13.40332],
-			maxZoom: 21,
+			maxZoom: 18,
 			zoom: 6
 		});
 		
 		map.setBasemap("osm");
+		
+		// posizizione iniziale settata all'effettiva posizione
+		map.showInitialPosition(true);
 	</script>
 	
 	<div class="layer-button"></div>
@@ -76,7 +73,7 @@
 
 		<div class="layer-group emilia">
 			<strong>Emilia-Romagna</strong>
-			<label><input type="checkbox" class="overlay" value="ortofoto_202324_EmiliaRomagna"> Ortofoto 2023-24</label><br>
+			<label><input type="checkbox" class="overlay" value="ortofoto_2020_EmiliaRomagna"> Ortofoto 2020</label><br>
 			<label><input type="checkbox" class="overlay" value="ctr_EmiliaRomagna"> CTR</label><br>
 			<label><input type="checkbox" class="overlay" value="usoDelSuolo_EmiliaRomagna"> Uso del suolo 2023</label>
 		</div>
@@ -84,7 +81,10 @@
 		<div class="layer-group toscana">
 			<strong>Toscana</strong>
 			<label><input type="checkbox" class="overlay" value="ortofoto_2022_Toscana"> Ortofoto 2022</label><br>
-			<label><input type="checkbox" class="overlay" value="ctr_Toscana"> CTR</label>
+			<label><input type="checkbox" class="overlay" value="ctr_Toscana"> CTR</label><br>
+			<label><input type="checkbox" class="overlay" value="fabbricati_Toscana"> Fabbricati</label><br>
+			<label><input type="checkbox" class="overlay" value="fogliCatastali_Toscana"> Fogli catastali</label><br>
+			<label><input type="checkbox" class="overlay" value="particelleCatastali_Toscana"> Particelle catastali</label>
 		</div>
 		
 		<div class="layer-group lazio">
@@ -100,6 +100,7 @@
 		const regionRadios = document.getElementsByName("region");
 		const regionPanel = document.getElementsByClassName("region-panel")[0];
 		const layerPanel = document.getElementsByClassName("layer-panel")[0];
+		
 		const groups = document.getElementsByClassName("layer-group");
 	
 		for (let i = 0; i < regionRadios.length; i++) {
@@ -171,7 +172,32 @@
 			
 		});
 		
-	
+
+		const layerButton = document.getElementsByClassName("layer-button")[0];
+
+		// apertura pannello regioni
+		layerButton.addEventListener("mouseenter", () => {
+			regionPanel.style.display = "block";
+		});
+
+		// chiusura quando il mouse esce
+		regionPanel.addEventListener("mouseleave", () => {
+			regionPanel.style.display = "none";
+		});
+
+		layerPanel.addEventListener("mouseleave", () => {
+			layerPanel.style.display = "none";
+		});
+		
+		
+		regionPanel.addEventListener("mouseleave", function () {
+
+			for (let i = 0; i < regionRadios.length; i++) {
+				regionRadios[i].checked = false;
+			}
+
+		});
+		
 		
 		
 	//	map.addBetterWMSLayer('edifici_scolastici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_scolastici');

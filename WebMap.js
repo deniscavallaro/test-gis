@@ -32,9 +32,6 @@ class WebMap {
 		this.initBasemaps();
 		this.initOverlays();
 		
-		// posizione attuale dell'utente
-		this.showInitialPosition();
-		
 		// gestione click sulla mappa
 		this.bindMapClick();
 	}
@@ -107,8 +104,8 @@ class WebMap {
 	 */
 	initOverlays() {
 		
-		this.addBetterWMSLayer('ortofoto_2024_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:ortofoto_agea_full_2024');
-		this.addBetterWMSLayer('ortofoto_202324_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/rer2023_24_rgb', 'rv:RER2023_24_RGB');
+		this.addBetterWMSLayer('ortofoto_2024_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:ortofoto_agea_2024');
+		this.addBetterWMSLayer('ortofoto_2020_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/agea2020_rgb', 'Agea2020_RGB');
 		this.addBetterWMSLayer('ortofotoCGR_200203_Lazio', 'https://geoportale.regione.lazio.it/geoserver/ows', 'geonode:2002_2003_CGR_25833_COG');
 		this.addBetterWMSLayer('ortofoto_2022_Toscana', 'https://www502.regione.toscana.it/ows_ofc/com.rt.wms.RTmap/wms?map=owsofc&', 'rt_ofc.5k22.32bit');
 		this.addBetterWMSLayer('ctr_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:ctrr');
@@ -117,6 +114,10 @@ class WebMap {
 		this.addBetterWMSLayer('ctr_Toscana', 'https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&', 'rt_ctr.10k');
 		this.addBetterWMSLayer('usoDelSuolo_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo', '2020_uso_suolo_ed2023');
 		this.addBetterWMSLayer('edifici_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
+
+		this.addBetterWMSLayer('fabbricati_Toscana', 'https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&', 'rt_cat.idcatfabbr.rt');
+		this.addBetterWMSLayer('fogliCatastali_Toscana', 'https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&', 'rt_cat.idcatbdfog.rt');
+		this.addBetterWMSLayer('particelleCatastali_Toscana', 'https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&', 'rt_cat.idcatpart.rt');
 	}
 	
 	/**
@@ -162,43 +163,68 @@ class WebMap {
 	}
 	
 	/**
-	 * Centra la mappa sulla posizione dell'utente utilizzando la geolocalizzazione del browser.
+	 * Centra la mappa sulla posizione iniziale.
+	 *
+	 * @param {boolean} useGeolocation Se true, usa la posizione del browser;
+	 *                                 se false, usa le coordinate passate
+	 * @param {number} [lat] Latitudine iniziale (usata se useGeolocation=false)
+	 * @param {number} [lng] Longitudine iniziale (usata se useGeolocation=false)
 	 */
-	showInitialPosition() {
-		
-		this.map.locate({ 
-			setView: true,
-			maxZoom: 16
-		});
-		
-		// Evento quando la posizione viene trovata
-		this.map.on('locationfound', (e) => {
-			var radius = e.accuracy;
-			
-			L.marker(e.latlng).addTo(this.map)
-				.bindPopup("You are within " + radius + " meters from this point").openPopup();
+	showInitialPosition(useGeolocation, lat=undefined, lng=undefined) {
 
-			L.circle(e.latlng, radius).addTo(this.map);
-		});
-		
-		// Evento in caso di errore
-		this.map.on('locationerror', (e) => {
-			alert(e.message);
-		});
+		// Se vogliamo usare la geolocalizzazione del browser
+		if (useGeolocation) {
+
+			// Chiede al browser di individuare la posizione
+			this.map.locate({
+				setView: false  // Non centrare subito, lo facciamo noi con zoomToGeometry
+			});
+
+			// Evento quando la posizione viene trovata (una sola volta)
+			this.map.once('locationfound', (e) => {
+
+				var radius = e.accuracy; // precisione stimata della geolocalizzazione
+
+				// Aggiunge un marker sulla posizione trovata
+				const marker = L.marker(e.latlng).addTo(this.map)
+					.bindPopup("You are within " + radius + " meters from this point") // popup con info
+					.openPopup();
+
+				// Aggiunge un cerchio per visualizzare la precisione
+				L.circle(e.latlng, radius).addTo(this.map);
+
+				// Centra e zooma la mappa sul marker usando il metodo già esistente
+				this.zoomToGeometry(marker);
+			});
+
+			// Evento in caso di errore di geolocalizzazione
+			this.map.once('locationerror', (e) => {
+				alert(e.message); // mostra messaggio di errore
+			});
+
+		} else {
+			// Se non vogliamo usare la geolocalizzazione,
+			// usiamo le coordinate passate come punto iniziale
+
+			const latlng = L.latLng(lat, lng); // crea un oggetto LatLng
+
+			// Centra e zooma la mappa sulle coordinate passate
+			this.zoomToGeometry(latlng);
+		}
 	}
 	
 	/**
-	 * Centra la mappa su un marker (o su una geometria).
+	 * Centra la mappa su un marker o su delle coordinate.
 	 *
-	 * @param {L.Marker|L.LatLng} marker Oggetto su cui effettuare lo zoom
+	 * @param {L.Marker|L.LatLng} obj Oggetto su cui effettuare lo zoom
 	 */
-	zoomToGeometry(marker) {
+	zoomToGeometry(obj) {
 		
 		let latlng;
 		
 		// se viene passato un marker
-		if (marker instanceof L.Marker) latlng = marker.getLatLng();
-		else latlng = marker;
+		if (obj instanceof L.Marker) latlng = obj.getLatLng();
+		else latlng = obj;
 		
 		// le coordinate prese vengono usate per centrare
 		this.map.setView(latlng, 16);
