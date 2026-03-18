@@ -25,6 +25,9 @@ class WebMap {
 		// lista overlays disponibili
 		this.overlays = {};
 			
+			
+			
+			
 		// basemap attualmente attiva
 		this.currentBasemap = null;
 		

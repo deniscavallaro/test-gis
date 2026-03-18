@@ -1,0 +1,75 @@
+  static MAP_CONFIG ={
+    "basemaps": [
+      "osm": {
+        "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": "© OpenStreetMap"
+      },
+      "satellite": {
+        "url": "https://api.maptiler.com/maps/satellite-v4/{z}/{x}/{y}.jpg?keytq4NkZ5dHYumXCN3aAZX",
+        "attribution": "\u003ca href=\"https://www.maptiler.com/copyright/\" target=\"_blank\"\u003e\u0026copy; MapTiler\u003c/a\u003e \u003ca href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\"\u003e\u0026copy; OpenStreetMap contributors\u003c/a\u003e"
+      }
+    ] 
+
+    "layers": [
+      "Veneto": [
+        "edifici_Veneto": {
+          "url": "https://idt2-geoserver.regione.veneto.it/geoserver/ows",
+          "layers": "rv:edifici_veneto_feb2022"
+        },
+        "ctr_Veneto": {
+          "url": "https://idt2-geoserver.regione.veneto.it/geoserver/ows",
+          "layers": "rv:ctrr"
+        },
+        "ortofoto_2024_Veneto": {
+          "url": "https://idt2-geoserver.regione.veneto.it/geoserver/ows",
+          "layers": "2020_uso_suolo_ed2023"
+        }
+      ],
+      "Emilia-Romagna": [
+        "usoDelSuolo_EmiliaRomagna": {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo",
+          "layers": "2020_uso_suolo_ed2023"
+        },
+        "ctr_EmiliaRomagna": {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/dbtr_ctr5",
+          "layers": "DBTR_Ctr5"
+        },
+        "ortofoto_2020_EmiliaRomagna": {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/agea2020_rgb",
+          "layers": "Agea2020_RGB"
+        }
+      ],
+      "Toscana": [
+        "fabbricati_Toscana": {
+          "url": "https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&",
+          "layers": "rt_cat.idcatfabbr.rt"
+        }, 
+        "fogliCatastali_Toscana": {
+          "url": "https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&",
+          "layers": "rt_cat.idcatbdfog.rt"
+        },
+        "particelleCatastali_Toscana": {
+          "url": "https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&",
+          "layers": "rt_cat.idcatpart.rt"
+        },
+        "ctr_Toscana": {
+          "url": "https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&",
+          "layers": "rt_ctr.10k"
+        },
+        "ortofoto_2022_Toscana": {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo",
+          "layers": "rt_ofc.5k22.32bit"
+        }
+      ],
+      "Lazio": [
+        "ctr_Lazio": {
+          "url": "https://geoportale.regione.lazio.it/geoserver/ows",
+          "layers": "geonode:ctr_5k_2020"
+        },
+        "ortofotoCGR_200203_Lazio": {
+          "url": "https://geoportale.regione.lazio.it/geoserver/ows",
+          "layers": "geonode:2002_2003_CGR_25833_COG"
+        }
+      ]
+    ]
+  }
