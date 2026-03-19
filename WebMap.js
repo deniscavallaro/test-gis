@@ -5,31 +5,91 @@
  */
 class WebMap {
 	
+	const DEFAULT_CONFIG = {
+	  basemaps: { 
+        osm: {
+          type: "tile",
+	  	  label: "OSM",
+		  url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+          options: {
+		    attribution: "© OpenStreetMap"
+		  }
+        }
+	  },
+	  overlays: {
+	    ortofoto_2024_Veneto: {
+		  type: "betterWMS",
+		  label: "Ortofoto Veneto - 2024",
+          region: "veneto",
+		  url: "https://idt2-geoserver.regione.veneto.it/geoserver/ows",
+		  options: {
+		    layers: "rv:ortofoto_agea_2024",
+		    format: "image/png",
+            transparent: true
+		  }
+		},
+        ortofoto_2020_EmiliaRomagna: {
+	      type: "betterWMS",
+		  label: "Ortofoto Emilia-Romagna - 2020",
+          region: "emilia-romagna",
+		  url: "https://servizigis.regione.emilia-romagna.it/wms/agea2020_rgb",
+		  options: {
+		    layers: "Agea2020_RGB",
+		    format: "image/png",
+            transparent: true
+		  }
+		},
+        ortofoto_2022_Toscana: {
+		  type: "betterWMS",
+		  label: "Ortofoto Toscana - 2022",
+          region: "toscana",
+		  url: "https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo",
+		  options: {
+		    layers: "rt_ofc.5k22.32bit",
+		    format: "image/png",
+            transparent: true
+		  }
+		},
+        ortofotoCGR_200203_Lazio: {
+		  type: "betterWMS",
+		  label: "Ortofoto Lazio - 2002-2003",
+          url: "https://geoportale.regione.lazio.it/geoserver/ows",
+		  options: {
+		    layers: "geonode:2002_2003_CGR_25833_COG",
+		    format: "image/png",
+            transparent: true
+		  }
+        }
+      }
+	};
+	
+	
 	/**
 	 * Costruttore della classe.
 	 *
 	 * @param {string} containerId ID del div HTML che conterra' la mappa
 	 * @param {Object} options Opzioni di configurazione Leaflet
 	 */
-	constructor(containerId, options) {
+	constructor(containerId, options = {}) {
 	
 		this.containerId = containerId;
 		this.options = options;
 		
-		// inizializzazione della mappa Leaflet
+		this.config = options.config || DEFAULT_CONFIG;
+		
 		this.map = L.map(containerId, options);
-		
-		// lista basemaps disponibili
 		this.basemaps = {};
-		
-		// lista overlays disponibili
 		this.overlays = {};
-			
-			
-			
-			
+		
+		
+		this._buildBasemapsFromConfig();
+		this._buildOverlaysFromConfig();
+		
+		
+		
 		// basemap attualmente attiva
 		this.currentBasemap = null;
+		this.currentRegion = "tutte";
 		
 		// inizializzazione basemaps e layers
 		this.initBasemaps();
@@ -39,91 +99,53 @@ class WebMap {
 		this.bindMapClick();
 	}
 	
-	/**
-	 * Aggiunge una basemap alla lista dei basemap
-	 *
-	 * @param name Nome identificativo della basemap
-	 * @param url URL del tile server
-	 * @param att Stringa di attribuzione
-	*/
-	addBasemap(name, url, att) {
+	_buildBasemapsFromConfig() {
+		const basemapDefs = this.config.basemaps || DEFAULT_CONFIG.basemaps;
+
+		Object.entries(basemapDefs).forEach(([name, def]) => {
+			const layer = this._createBasemap(def);
 		
-		this.basemaps[name] = L.tileLayer(url, {
-			attribution: att
+			if (layer) 
+				this.basemaps[name] = layer;
 		});
 	}
 	
-/*	
-	addOverlay(name, url, nameLayer) {
-		
-		this.overlays[name] = L.tileLayer.wms(url, {
-			layers: nameLayer,
-			format: 'image/png',
-			transparent: true
+	_createBasemap(def) {
+		if (!def || !def.url) return null;
+		return new L.tileLayer(def.url, def.options);
+	}
+	
+	
+	_buildOverlaysFromConfig() {
+		const overlaysDefs = this.config.overlays || DEFAULT_CONFIG.overlays;
+
+		Object.entries(overlaysDefs).forEach(([name, def]) => {
+			const layer = this._createOverlay(def);
+
+			if (layer) 
+				this.overlays[name] = layer;
 		});
+	}
+	
+	/*
+	
+    _createOverlay(def) {
+        if (!def || !def.url) return null;
 		
-	}  	*/
+		const ol = L.TileLayer.BetterWMS(def.url, def.options);
 
-	/**
-	 * Crea e aggiunge un layer WMS interrogabile tramite BetterWMS.
-	 *
-	 * @param {string} name nome logico del layer
-	 * @param {string} url URL del servizio WMS
-	 * @param {string} layerName nome del layer nel server WMS
-	 */
-    addBetterWMSLayer(name, url, layerName) {
-        
-		const layer = new L.TileLayer.BetterWMS(url, {
-            layers: layerName,
-            format: "image/png",
-            transparent: true,
-            version: "1.1.1"
-        });
-
-        /*
+        /
 			Quando BetterWMS identifica una feature cliccata,
 			chiama questo hook che a sua volta invoca showPractice().
-		*/
+		/
         const self = this;
-        layer.onFeatureClick = function(feature, latlng) {
+        ol.onFeatureClick = function(feature, latlng) {
             self.showPractice(feature, latlng);
         };
-		
-		// Memorizza il layer nella lista degli overlay
-        this.overlays[name] = layer;
     }
-
-	/**
-	 * Inizializza le basemap disponibili.
-	 */
-	initBasemaps() {
-
-		this.addBasemap('osm', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', '© OpenStreetMap');
-		this.addBasemap('satellite', 'https://api.maptiler.com/maps/satellite-v4/{z}/{x}/{y}.jpg?key=tq4NkZ5dHYumXCN3aAZX', "\u003ca href=\"https://www.maptiler.com/copyright/\" target=\"_blank\"\u003e\u0026copy; MapTiler\u003c/a\u003e \u003ca href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\"\u003e\u0026copy; OpenStreetMap contributors\u003c/a\u003e");
-	}
 	
-	/**
-	 * Inizializza i layer overlay.
-	 */
-	initOverlays() {
-		
-		this.addBetterWMSLayer('usoDelSuolo_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/uso_del_suolo', '2020_uso_suolo_ed2023');
-		this.addBetterWMSLayer('edifici_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_veneto_feb2022');
+	*/
 
-		this.addBetterWMSLayer('fabbricati_Toscana', 'https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&', 'rt_cat.idcatfabbr.rt');
-		this.addBetterWMSLayer('fogliCatastali_Toscana', 'https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&', 'rt_cat.idcatbdfog.rt');
-		this.addBetterWMSLayer('particelleCatastali_Toscana', 'https://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto&', 'rt_cat.idcatpart.rt');
-		
-		this.addBetterWMSLayer('ctr_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:ctrr');
-		this.addBetterWMSLayer('ctr_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/dbtr_ctr5', 'DBTR_Ctr5');
-		this.addBetterWMSLayer('ctr_Lazio', 'https://geoportale.regione.lazio.it/geoserver/ows', 'geonode:ctr_5k_2020');
-		this.addBetterWMSLayer('ctr_Toscana', 'https://www502.regione.toscana.it/ows_ctr/com.rt.wms.RTmap/ows?map=owsctr&', 'rt_ctr.10k');
-		this.addBetterWMSLayer('ortofoto_2020_EmiliaRomagna', 'https://servizigis.regione.emilia-romagna.it/wms/agea2020_rgb', 'Agea2020_RGB');
-		this.addBetterWMSLayer('ortofoto_2024_Veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:ortofoto_agea_2024');
-		this.addBetterWMSLayer('ortofotoCGR_200203_Lazio', 'https://geoportale.regione.lazio.it/geoserver/ows', 'geonode:2002_2003_CGR_25833_COG');
-		this.addBetterWMSLayer('ortofoto_2022_Toscana', 'https://www502.regione.toscana.it/ows_ofc/com.rt.wms.RTmap/wms?map=owsofc&', 'rt_ofc.5k22.32bit');
-		
-	}
 	
 	/**
 	 * Imposta la basemap attiva.
