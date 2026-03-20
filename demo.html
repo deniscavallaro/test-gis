@@ -11,6 +11,7 @@
 	<link rel="stylesheet" href="https://unpkg.com/leaflet-mouse-position@1.2.0/src/L.Control.MousePosition.css" />
 	
 	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+	
 	<!-- oggetto di ricerca -->
 	<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 	<!-- mini-mappa -->
@@ -20,229 +21,31 @@
 	
 	<link rel="stylesheet" href="MapCSS.css" />
 	<script src="BetterWMS.js"></script>
-	<script src="WebMap.js"></script>
 	<script src="MapConfig.js"></script>
+	<script src="WebMap.js"></script>
 	
-	<!-- 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.js"></script>
-	-->
 </head>
 
 <body>
-	<div id="map"></div>	
+	<div id="map"></div>
+	<div id="mapControls"></div>	
 	
 	<script>
 		
-		// file esterno per config
-		
 		const map = new WebMap("map", {
 			center: [42.032974, 13.40332],
+			zoom: 6,
 			maxZoom: 18,
-			zoom: 6
+			config: MAP_CONFIG,
+			controlsContainer: "mapControls"
 		});
 		
 		map.setBasemap("osm");
 		
 		// posizizione iniziale settata all'effettiva posizione
 		map.showInitialPosition(true);
+		map.showFeatures();
 	</script>
-	
-	<div class="layer-button"></div>
-	
-	<div class="region-panel">
-		<strong>Seleziona Regione</strong><br>
-		<label><input type="radio" name="region" value="tutte"> Tutte</label><br>
-		<label><input type="radio" name="region" value="veneto"> Veneto</label><br>
-		<label><input type="radio" name="region" value="emilia"> Emilia-Romagna</label><br>
-		<label><input type="radio" name="region" value="toscana"> Toscana</label><br>
-		<label><input type="radio" name="region" value="lazio"> Lazio</label>
-	</div>
-	
-	<div class="layer-panel">
-		<div class="layer-group">
-			<strong>Mappe di base</strong>
-			<label><input type="radio" name="basemap" value="osm" class="basemap" checked> OSM </label><br>
-			<label><input type="radio" name="basemap" value="satellite" class="basemap"> Satellite </label>
-			<hr>
-		</div>
-
-		<div class="layer-group veneto">
-			<strong>Veneto</strong>
-			<label><input type="checkbox" class="overlay" value="ortofoto_2024_Veneto"> Ortofoto 2024</label><br>
-			<label><input type="checkbox" class="overlay" value="ctr_Veneto"> CTR</label><br>
-			<label><input type="checkbox" class="overlay" value="edifici_Veneto"> Edifici 2022</label>		
-		</div>
-
-		<div class="layer-group emilia">
-			<strong>Emilia-Romagna</strong>
-			<label><input type="checkbox" class="overlay" value="ortofoto_2020_EmiliaRomagna"> Ortofoto 2020</label><br>
-			<label><input type="checkbox" class="overlay" value="ctr_EmiliaRomagna"> CTR</label><br>
-			<label><input type="checkbox" class="overlay" value="usoDelSuolo_EmiliaRomagna"> Uso del suolo 2023</label>
-		</div>
-		
-		<div class="layer-group toscana">
-			<strong>Toscana</strong>
-			<label><input type="checkbox" class="overlay" value="ortofoto_2022_Toscana"> Ortofoto 2022</label><br>
-			<label><input type="checkbox" class="overlay" value="ctr_Toscana"> CTR</label><br>
-			<label><input type="checkbox" class="overlay" value="fabbricati_Toscana"> Fabbricati</label><br>
-			<label><input type="checkbox" class="overlay" value="fogliCatastali_Toscana"> Fogli catastali</label><br>
-			<label><input type="checkbox" class="overlay" value="particelleCatastali_Toscana"> Particelle catastali</label>
-		</div>
-		
-		<div class="layer-group lazio">
-			<strong>Lazio</strong>
-			<label><input type="checkbox" class="overlay" value="ortofotoCGR_200203_Lazio"> Ortofoto CGR 2002-03</label><br>
-			<label><input type="checkbox" class="overlay" value="ctr_Lazio"> CTR</label><br>
-		</div>
-		
-	</div>
-	
-	<script>
-		// recupera tutti i radio button delle regioni
-		const regionRadios = document.getElementsByName("region");
-		
-		// pannello di selezione regione
-		const regionPanel = document.getElementsByClassName("region-panel")[0];
-		
-		// pannello che contiene basemap e overlay
-		const layerPanel = document.getElementsByClassName("layer-panel")[0];
-		
-		// gruppi di layer (basemap + gruppi regionali)
-		const groups = document.getElementsByClassName("layer-group");
-		
-		/* Gestione scelta regione, serve a passare dal pannello regionial pannello layer */
-		for (let i = 0; i < regionRadios.length; i++) 
-		{
-			regionRadios[i].addEventListener("change", function () 
-			{
-				// regione selezionata
-				const region = this.value;
-				
-				// nasconde pannello regioni
-				regionPanel.style.display = "none";
-				
-				// nasconde pannello regioni
-				layerPanel.style.display = "block";
-				
-				// scorre tutti i gruppi di layer
-				for (let j = 0; j < groups.length; j++) 
-				{
-					const group = groups[j];
-					
-					// se l’utente seleziona tutte, mostra tutti i gruppi
-					if (region === "tutte") 
-					{
-						group.style.display = "block";
-						continue;
-					}
-					
-					// se il gruppo appartiene alla regione selezionata, viene mostrato
-					if (group.classList.contains(region)) 
-					{
-						group.style.display = "block";
-					} 
-					/* Se il gruppo non è della regione e non contiene basemap, 
-					   viene nascosto, evitando di nascondere il gruppo mappe di base */
-					else 
-					{
-						// verifica se contiene una basemap
-						const basemap = group.getElementsByClassName("basemap");
-		
-						if (basemap.length === 0) 
-							group.style.display = "none";
-					}
-				}
-		
-			});
-
-		}
-		
-		/* Gestione cambio basemap*/
-		// recupera tutte le radiobuttons delle basemap
-		const radios = Array.from(document.getElementsByClassName("basemap"));
-
-		radios.forEach((rb) => {
-		
-			rb.addEventListener("change", function () {
-			
-				// quando cambia il radio button
-				if (this.checked) 
-					// cambia la basemap nella mappa
-					map.setBasemap(this.value);
-			});
-
-		});
-		
-		/* Gestione overlay */
-		// recupera tutte le checkbox degli overlay
-		const checkboxes = Array.from(document.getElementsByClassName("overlay"));
-		
-		// Ogni checkbox controlla un layer
-		checkboxes.forEach( (cb) => {
-		
-			cb.addEventListener("click", function() { 
-			
-				if (this.checked)
-				{	
-					map.toggleLayer(this.value, true);
-				}
-				else
-				{
-					map.toggleLayer(this.value, false)
-				}
-			});
-			
-		});
-		
-		/* Gestione apertura pannelli */
-		const layerButton = document.getElementsByClassName("layer-button")[0];
-
-		// apertura pannello regioni
-		layerButton.addEventListener("mouseenter", () => {
-			regionPanel.style.display = "block";
-		});
-
-		// chiusura quando il mouse esce
-		regionPanel.addEventListener("mouseleave", () => {
-			regionPanel.style.display = "none";
-		});
-
-		layerPanel.addEventListener("mouseleave", () => {
-			layerPanel.style.display = "none";
-		});
-		
-		
-		regionPanel.addEventListener("mouseleave", function () {
-
-			for (let i = 0; i < regionRadios.length; i++) {
-				regionRadios[i].checked = false;
-			}
-
-		});
-		
-		
-		
-	//	map.addBetterWMSLayer('edifici_scolastici_veneto', 'https://idt2-geoserver.regione.veneto.it/geoserver/ows', 'rv:edifici_scolastici');
-
-		new L.Control.Geocoder().addTo(map.map);
-	
-		
-		// mini-mappa
-		basemapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-		var baseMap = new L.TileLayer(basemapUrl, {minZoom: 0, maxZoom: 13});
-		var miniMap = new L.Control.MiniMap(baseMap).addTo(map.map);
-		
-		// coordinate per hover mouse
-		L.control.mousePosition({
-			position: "bottomleft",
-			separator: " | ",
-			numDigits: 6,
-			prefix: "Coordinate:"
-		}).addTo(map.map);
-		
-	</script>
-	
 </body>
 
 </html>

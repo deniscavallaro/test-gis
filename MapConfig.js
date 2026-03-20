@@ -1,4 +1,4 @@
-  static MAP_CONFIG = {
+  const MAP_CONFIG = {
     basemaps: { 
       osm: {
         type: "tile",

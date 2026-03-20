@@ -1,11 +1,4 @@
-/**
- * WebMap 
- *
- * Classe che incapsula la gestione di una mappa Leaflet.
- */
-class WebMap {
-	
-	const DEFAULT_CONFIG = {
+ const DEFAULT_CONFIG = {
 	  basemaps: { 
         osm: {
           type: "tile",
@@ -63,6 +56,12 @@ class WebMap {
       }
 	};
 	
+ /**
+ * WebMap 
+ *
+ * Classe che incapsula la gestione di una mappa Leaflet.
+ */
+class WebMap {
 	
 	/**
 	 * Costruttore della classe.
@@ -78,26 +77,59 @@ class WebMap {
 		this.config = options.config || DEFAULT_CONFIG;
 		
 		this.map = L.map(containerId, options);
+		
+		// Container per controlli
+		this.controlsContainer = document.getElementById(options.controlsContainer);
+		
+		// oggetti interni
 		this.basemaps = {};
 		this.overlays = {};
-		
-		
-		this._buildBasemapsFromConfig();
-		this._buildOverlaysFromConfig();
-		
-		
-		
-		// basemap attualmente attiva
 		this.currentBasemap = null;
 		this.currentRegion = "tutte";
 		
-		// inizializzazione basemaps e layers
-		this.initBasemaps();
-		this.initOverlays();
+		// costruzione layer
+		this._buildBasemapsFromConfig();
+		this._buildOverlaysFromConfig();
 		
-		// gestione click sulla mappa
+		// UI
+		if (options.controlsContainer) {
+			this.buildBasemaps(options.controlsContainer);
+			
+			// separatore visivo
+			const container = document.getElementById(options.controlsContainer);
+			container.appendChild(document.createElement("hr"));
+			
+			this.buildOverlays(options.controlsContainer);
+		}
+		
+
 		this.bindMapClick();
 	}
+	
+	
+	
+	_createBasemap(def) {
+		if (!def || !def.url) return null;
+		return new L.tileLayer(def.url, def.options);
+	}
+	
+	_createOverlay(def) {
+        if (!def || !def.url) return null;
+		
+		const layer = L.TileLayer.BetterWMS(def.url, def.options);
+
+        /*
+			Quando BetterWMS identifica una feature cliccata,
+			chiama questo hook che a sua volta invoca showPractice().
+		*/
+        const self = this;
+        layer.onFeatureClick = function(feature, latlng) {
+            self.showPractice(feature, latlng);
+        };
+		
+		return layer;
+    }
+	
 	
 	_buildBasemapsFromConfig() {
 		const basemapDefs = this.config.basemaps || DEFAULT_CONFIG.basemaps;
@@ -110,12 +142,6 @@ class WebMap {
 		});
 	}
 	
-	_createBasemap(def) {
-		if (!def || !def.url) return null;
-		return new L.tileLayer(def.url, def.options);
-	}
-	
-	
 	_buildOverlaysFromConfig() {
 		const overlaysDefs = this.config.overlays || DEFAULT_CONFIG.overlays;
 
@@ -127,25 +153,98 @@ class WebMap {
 		});
 	}
 	
-	/*
 	
-    _createOverlay(def) {
-        if (!def || !def.url) return null;
+	
+	// radiobutton
+	_buildBasemaps(containerId) {
+		const container = document.getElementById(containerId);
 		
-		const ol = L.TileLayer.BetterWMS(def.url, def.options);
-
-        /
-			Quando BetterWMS identifica una feature cliccata,
-			chiama questo hook che a sua volta invoca showPractice().
-		/
-        const self = this;
-        ol.onFeatureClick = function(feature, latlng) {
-            self.showPractice(feature, latlng);
-        };
-    }
+		if (!container) return;
+		
+		// titolo
+		const title = document.createElement("div");
+		title.innerHTML = "<strong>Basemap</strong>";
+		container.appendChild(title);
+		
+		Object.entries(this.basemaps).forEach(([name, layer]) => {
+			
+			const label = document.createElement("label");
+			
+			const radio = document.createElement("input");
+			radio.type = "radio";
+			radio.name = "basemap";
+			radio.value = name;
+			
+			radio.addEventListener("change", () => {
+				this.setBasemap(name);
+			});
+			
+			label.appendChild(radio);
+			
+			// label leggibile da config
+			const bm = this.config.basemaps[name];
+			const labelText = (bm && bm.label) ? bm.label : name;
+			label.append(" " + labelText);
+			
+			container.appendChild(label);
+			container.appendChild(document.createElement("br"));
+		})
+	}
 	
-	*/
+	// checkbox
+	_buildOverlays(containerId) {
+		const container = document.getElementById(containerId);
+		
+		if (!container) return;
+		
+		// titolo
+		const title = document.createElement("div");
+		title.innerHTML = "<strong>Overlay</strong>";
+		container.appendChild(title);
+		
+		Object.entries(this.overlays).forEach(([name, layer]) => {
+			
+			const def = this.config.overlays[name];
+			
+			// filtro regione iniziale
+			if (def.region && (this.currentRegion !== "tutte") && (def.region !== this.currentRegion))
+				return;
+			
+			
+			const label = document.createElement("label");
+			
+			const checkbox = document.createElement("input");
+			checkbox.type = "checkbox";
+			checkbox.value = name;
+			
+			checkbox.addEventListener("change", (e) => {
+				this.toggleLayer(name, e.target.checked);
+			});
+			
+			label.appendChild(checkbox);
+			
+			// label leggibile da config
+			const ol = this.config.overlays[name];
+			const labelText = (ol && ol.label) ? ol.label : name;
+			label.append(" " + labelText);
+			
+			container.appendChild(label);
+			container.appendChild(document.createElement("br"));
+		})
+	}
 
+	
+	setRegion(region) {
+		this.currentRegion = region;
+		
+		if (this.controlsContainer) {
+			this.controlsContainer.innerHTML = "";
+			this._buildBasemaps(this.controlsContainer.id);
+			this.controlsContainer.appendChild(document.createElement("hr"));
+			this._buildOverlays(this.controlsContainer.id);
+		}
+	}
+	
 	
 	/**
 	 * Imposta la basemap attiva.
@@ -188,6 +287,12 @@ class WebMap {
 		// in caso contrario (false), si rimuove
 		else this.map.removeLayer(ol);
 	}
+	
+	
+	
+	
+	
+	
 	
 	/**
 	 * Centra la mappa sulla posizione iniziale.
@@ -307,4 +412,26 @@ class WebMap {
 
         L.popup().setLatLng(latlng).setContent(html).addTo(this.map);
     }
+	
+	showFeatures() {
+
+		// geocoder
+		new L.Control.Geocoder().addTo(this.map);
+
+		// mini-mappa
+		const baseMap = L.tileLayer(
+			'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+			{ minZoom: 0, maxZoom: 13 }
+		);
+
+		new L.Control.MiniMap(baseMap).addTo(this.map);
+
+		// coordinate mouse
+		L.control.mousePosition({
+			position: "bottomleft",
+			separator: " | ",
+			numDigits: 6,
+			prefix: "Coordinate:"
+		}).addTo(this.map);
+	}
 }
