@@ -93,13 +93,13 @@ class WebMap {
 		
 		// UI
 		if (options.controlsContainer) {
-			this.buildBasemaps(options.controlsContainer);
+			this._buildBasemapsFromConfig(options.controlsContainer);
 			
 			// separatore visivo
 			const container = document.getElementById(options.controlsContainer);
 			container.appendChild(document.createElement("hr"));
 			
-			this.buildOverlays(options.controlsContainer);
+			this._buildOverlaysFromConfig(options.controlsContainer);
 		}
 		
 
@@ -112,16 +112,14 @@ class WebMap {
 		if (!def || !def.url) return null;
 		return new L.tileLayer(def.url, def.options);
 	}
+
+/*
 	
 	_createOverlay(def) {
         if (!def || !def.url) return null;
 		
 		const layer = L.TileLayer.BetterWMS(def.url, def.options);
 
-        /*
-			Quando BetterWMS identifica una feature cliccata,
-			chiama questo hook che a sua volta invoca showPractice().
-		*/
         const self = this;
         layer.onFeatureClick = function(feature, latlng) {
             self.showPractice(feature, latlng);
@@ -129,7 +127,44 @@ class WebMap {
 		
 		return layer;
     }
-	
+*/
+
+	_createOverlay(def) {
+		if (!def || !def.type) return null;
+
+		switch (def.type) {
+
+			case "wms":
+				return L.tileLayer.wms(def.url, {
+					layers: def.layers,
+					format: "image/png",
+					transparent: true,
+					version: "1.1.1",
+					...(def.options || {})
+				});
+
+			case "betterWMS": {
+				const layer = L.tileLayer.betterWMS(def.url, {
+					layers: def.layers,
+					format: "image/png",
+					transparent: true,
+					version: "1.1.1",
+					...(def.options || {})
+				});
+
+				// callback quando clicchi sulla mappa
+				layer.onFeatureClick = (feature, latlng) => {
+					this.showPractice(feature, latlng);
+				};
+
+				return layer;
+			}
+
+			default:
+				console.warn("Tipo overlay non supportato:", def.type);
+				return null;
+		}
+	}
 	
 	_buildBasemapsFromConfig() {
 		const basemapDefs = this.config.basemaps || DEFAULT_CONFIG.basemaps;
